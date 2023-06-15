@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
 import copy as cp
+import matplotlib.pyplot as plt
 
 
 def first_boat(A):
