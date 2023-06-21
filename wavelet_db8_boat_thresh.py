@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 def wt(matrix):
-    cA, (cH, cV, cD) = pywt.dwt2(data=matrix, wavelet='db2')
+    cA, (cH, cV, cD) = pywt.dwt2(data=matrix, wavelet='db8', mode='periodization')
     top_row = np.concatenate((cA, cH), axis=1)
     bottom_row = np.concatenate((cV, cD), axis=1)
     matrix_transformed = np.concatenate((top_row, bottom_row), axis=0)
@@ -73,66 +73,65 @@ if __name__ == "__main__":
     boat_8 = cp.copy(boat_7)
     boat_8[0:4, 0:4] = boat_8_tmp
 
-    boat_9_tmp = wt(boat_8[0:4, 0:4])
+    boat_9_tmp = wt(boat_8[0:2, 0:2])
     boat_9 = cp.copy(boat_8)
-    boat_9[0:4, 0:4] = boat_9_tmp
-
-    boat_10_tmp = wt(boat_9[0:2, 0:2])
-    boat_10 = cp.copy(boat_9)
-    boat_10[0:2, 0:2] = boat_10_tmp
+    boat_9[0:2, 0:2] = boat_9_tmp
 
     # Thresholding
-    # boat_10[normalizee(boat_10).astype(np.uint8) < 30] = 0
+    thresh = 100
+    boat_9[np.abs(boat_9) < thresh] = 0
+    print(f"We have {np.count_nonzero(boat_9 == 0)} zeros out of {int(boat_9.shape[0] * boat_9.shape[1])}, "
+          f"which is roughly ${np.round((np.count_nonzero(boat_9 == 0) / int(boat_9.shape[0] * boat_9.shape[1])) * 100, 2)}\%$.")
 
-    aboat_10 = cp.copy(boat_10)
+    aboat_10 = cp.copy(boat_9)
     aboat_tmp = aboat_10[0:2, 0:2]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db2')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
     aboat_10[0:2, 0:2] = tmp
 
     aboat_9 = cp.copy(aboat_10)
     aboat_tmp = aboat_9[0:4, 0:4]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db2')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
     aboat_9[0:4, 0:4] = tmp
 
     aboat_8 = cp.copy(aboat_9)
     aboat_tmp = aboat_8[0:8, 0:8]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db2')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
     aboat_8[0:8, 0:8] = tmp
 
     aboat_7 = cp.copy(aboat_8)
     aboat_tmp = aboat_7[0:16, 0:16]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db2')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
     aboat_7[0:16, 0:16] = tmp
 
     aboat_6 = cp.copy(aboat_7)
     aboat_tmp = aboat_6[0:32, 0:32]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db2')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
     aboat_6[0:32, 0:32] = tmp
 
     aboat_5 = cp.copy(aboat_6)
     aboat_tmp = aboat_5[0:64, 0:64]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db2')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
     aboat_5[0:64, 0:64] = tmp
 
     aboat_4 = cp.copy(aboat_5)
     aboat_tmp = aboat_4[0:128, 0:128]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db2')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
     aboat_4[0:128, 0:128] = tmp
 
     aboat_3 = cp.copy(aboat_4)
     aboat_tmp = aboat_3[0:256, 0:256]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db2')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
     aboat_3[0:256, 0:256] = tmp
 
     aboat_2 = cp.copy(aboat_3)
     aboat_tmp = aboat_2[0:512, 0:512]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db2')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
     aboat_2[0:512, 0:512] = tmp
 
-    boat_haar = Image.fromarray(normalizee(aboat_2).astype(np.uint8))
-    boat_haar.save(f'./db2_boat_thresh_10.png')
+    boat_haar = Image.fromarray(aboat_2.astype(np.uint8))
+    boat_haar.save(f'./db8_boat_thresh_{thresh}.png')
 
-    plt.figure(figsize=(7, 7))
+    """plt.figure(figsize=(7, 7))
     plt.imshow(aboat_2, cmap='gray')
     plt.title("")
-    plt.show()
+    plt.show()"""

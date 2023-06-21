@@ -73,18 +73,17 @@ if __name__ == "__main__":
     boat_8 = cp.copy(boat_7)
     boat_8[0:4, 0:4] = boat_8_tmp
 
-    boat_9_tmp = wt(boat_8[0:4, 0:4])
+    boat_9_tmp = wt(boat_8[0:2, 0:2])
     boat_9 = cp.copy(boat_8)
-    boat_9[0:4, 0:4] = boat_9_tmp
-
-    boat_10_tmp = wt(boat_9[0:2, 0:2])
-    boat_10 = cp.copy(boat_9)
-    boat_10[0:2, 0:2] = boat_10_tmp
+    boat_9[0:2, 0:2] = boat_9_tmp
 
     # Thresholding
-    # boat_10[normalizee(boat_10).astype(np.uint8) < 30] = 0
+    thresh = 10
+    boat_9[np.abs(boat_9) < thresh] = 0
+    print(f"We have {np.count_nonzero(boat_9 == 0)} zeros out of {int(boat_9.shape[0] * boat_9.shape[1])}, "
+          f"which is roughly ${np.round((np.count_nonzero(boat_9 == 0)/int(boat_9.shape[0] * boat_9.shape[1]))*100,2)}\%$.")
 
-    aboat_10 = cp.copy(boat_10)
+    aboat_10 = cp.copy(boat_9)
     aboat_tmp = aboat_10[0:2, 0:2]
     tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
     aboat_10[0:2, 0:2] = tmp
@@ -130,9 +129,9 @@ if __name__ == "__main__":
     aboat_2[0:512, 0:512] = tmp
 
     boat_haar = Image.fromarray(normalizee(aboat_2).astype(np.uint8))
-    boat_haar.save(f'./haar_boat_thresh_10.png')
+    boat_haar.save(f'./haar_boat_thresh_{thresh}.png')
 
-    plt.figure(figsize=(7, 7))
-    plt.imshow(aboat_2, cmap='gray')
+    """plt.figure(figsize=(7, 7))
+    plt.imshow(aboat_2.astype(np.uint8), cmap='gray')
     plt.title("")
-    plt.show()
+    plt.show()"""
