@@ -11,11 +11,6 @@ def wt(matrix):
     top_row = np.concatenate((cA, cH), axis=1)
     bottom_row = np.concatenate((cV, cD), axis=1)
     matrix_transformed = np.concatenate((top_row, bottom_row), axis=0)
-    """old_min = np.min(matrix_transformed)
-    old_max = np.max(matrix_transformed)
-    new_min = 0
-    new_max = 255
-    matrix_transformed = ((matrix_transformed - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min"""
     return matrix_transformed
 
 

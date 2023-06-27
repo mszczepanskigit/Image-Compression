@@ -7,15 +7,10 @@ from sklearn.cluster import KMeans
 
 
 def wt(matrix):
-    cA, (cH, cV, cD) = pywt.dwt2(data=matrix, wavelet='db8', mode='periodization')
+    cA, (cH, cV, cD) = pywt.dwt2(data=matrix, wavelet='haar')
     top_row = np.concatenate((cA, cH), axis=1)
     bottom_row = np.concatenate((cV, cD), axis=1)
     matrix_transformed = np.concatenate((top_row, bottom_row), axis=0)
-    """old_min = np.min(matrix_transformed)
-    old_max = np.max(matrix_transformed)
-    new_min = 0
-    new_max = 255
-    matrix_transformed = ((matrix_transformed - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min"""
     return matrix_transformed
 
 
@@ -51,14 +46,29 @@ def vector_quantization(coeffs, num_clusters):
 
 if __name__ == "__main__":
     # noinspection PyTypeChecker
-    boat = np.asarray(Image.open('images/Boat.png').convert('RGB').convert('L'))
+    boat = np.asarray(Image.open('images/Museum.png').convert('L'))
 
-    boat = boat.astype(np.double)
+    boat_squared = np.zeros((4096, 4096))
+    boat_squared[:boat.shape[0], :boat.shape[1]] = boat
+
+    boat = boat_squared.astype(np.double)
 
     boat_1 = wt(boat)
 
-    boat_2_tmp = wt(boat_1[0:256, 0:256])
-    boat_2 = cp.copy(boat_1)
+    boat_m1_tmp = wt(boat_1[0:2048, 0:2048])
+    boat_m1 = cp.copy(boat_1)
+    boat_m1[0:2048, 0:2048] = boat_m1_tmp
+
+    boat_0_tmp = wt(boat_m1[0:1024, 0:1024])
+    boat_0 = cp.copy(boat_m1)
+    boat_0[0:1024, 0:1024] = boat_0_tmp
+
+    boat_11_tmp = wt(boat_0[0:512, 0:512])
+    boat_11 = cp.copy(boat_0)
+    boat_11[0:512, 0:512] = boat_11_tmp
+
+    boat_2_tmp = wt(boat_11[0:256, 0:256])
+    boat_2 = cp.copy(boat_11)
     boat_2[0:256, 0:256] = boat_2_tmp
 
     boat_3_tmp = wt(boat_2[0:128, 0:128])
@@ -89,61 +99,97 @@ if __name__ == "__main__":
     boat_9 = cp.copy(boat_8)
     boat_9[0:2, 0:2] = boat_9_tmp
 
-    print(np.min(boat_9), np.max(boat_9))
-
-    num_clusters = 8
+    num_clusters = 64
 
     quantized_boat = vector_quantization(boat_9, num_clusters)
 
+    """ordered_values = np.sort(boat_9.flatten())
+    x = np.arange(len(ordered_values))
+
+    fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+
+    # Plot the ordered values in the first subplot
+    axs[0].plot(x[150_000:16_000_000], ordered_values[150_000:16_000_000])
+    axs[0].set_ylabel('Value')
+    axs[0].set_title('Ordered Values of the transformed image')
+    axs[0].grid(True)
+
+    # Plot the ordered logarithm values in the second subplot
+    axs[1].plot(x[150_000:16_000_000], np.log(np.abs(ordered_values[150_000:16_000_000])))
+    axs[1].set_ylabel('log(Value)')
+    axs[1].set_title('Log of Absolute Values of the transformed image')
+    axs[1].grid(True)
+
+    # Adjust the spacing between subplots
+    plt.tight_layout()
+
+    # Display the figure
+    plt.show()"""
+
     aboat_10 = cp.copy(quantized_boat)
     aboat_tmp = aboat_10[0:2, 0:2]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
     aboat_10[0:2, 0:2] = tmp
 
     aboat_9 = cp.copy(aboat_10)
     aboat_tmp = aboat_9[0:4, 0:4]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
     aboat_9[0:4, 0:4] = tmp
 
     aboat_8 = cp.copy(aboat_9)
     aboat_tmp = aboat_8[0:8, 0:8]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
     aboat_8[0:8, 0:8] = tmp
 
     aboat_7 = cp.copy(aboat_8)
     aboat_tmp = aboat_7[0:16, 0:16]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
     aboat_7[0:16, 0:16] = tmp
 
     aboat_6 = cp.copy(aboat_7)
     aboat_tmp = aboat_6[0:32, 0:32]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
     aboat_6[0:32, 0:32] = tmp
 
     aboat_5 = cp.copy(aboat_6)
     aboat_tmp = aboat_5[0:64, 0:64]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
     aboat_5[0:64, 0:64] = tmp
 
     aboat_4 = cp.copy(aboat_5)
     aboat_tmp = aboat_4[0:128, 0:128]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
     aboat_4[0:128, 0:128] = tmp
 
     aboat_3 = cp.copy(aboat_4)
     aboat_tmp = aboat_3[0:256, 0:256]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
     aboat_3[0:256, 0:256] = tmp
 
     aboat_2 = cp.copy(aboat_3)
     aboat_tmp = aboat_2[0:512, 0:512]
-    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='db8', mode='periodization')
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
     aboat_2[0:512, 0:512] = tmp
 
-    boat_haar = Image.fromarray(normalizee(aboat_2).astype(np.uint8))
-    boat_haar.save(f'./db8_boat_quant_{num_clusters}.png')
+    aboat_1 = cp.copy(aboat_2)
+    aboat_tmp = aboat_1[0:1024, 0:1024]
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
+    aboat_1[0:1024, 0:1024] = tmp
+
+    aboat_0 = cp.copy(aboat_1)
+    aboat_tmp = aboat_0[0:2048, 0:2048]
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
+    aboat_0[0:2048, 0:2048] = tmp
+
+    aboat_m1 = cp.copy(aboat_0)
+    aboat_tmp = aboat_m1[0:4096, 0:4096]
+    tmp = pywt.idwt2(get_coeffs(aboat_tmp), wavelet='haar')
+    aboat_m1[0:4096, 0:4096] = tmp
+
+    boat_haar = Image.fromarray(normalizee(aboat_m1[:1731, :2400]).astype(np.uint8))
+    boat_haar.save(f'./haar_museum_quant_{num_clusters}.png')
 
     plt.figure(figsize=(7, 7))
-    plt.imshow(aboat_2.astype(np.uint8), cmap='gray')
+    plt.imshow(normalizee(aboat_m1[:1731, :2400]).astype(np.uint8), cmap='gray')
     plt.title("")
     plt.show()
